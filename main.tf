@@ -98,7 +98,7 @@ resource "google_compute_instance" "my-vm" {
   machine_type            = "f1-micro"
   tags                    = ["web","http-server"]
   zone                    = "us-central1-a"
-  metadata_startup_script = file("startup.sh")
+  metadata_startup_script = "echo hi > /test.txt"
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-9"
