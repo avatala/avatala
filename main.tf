@@ -1,22 +1,22 @@
 terraform {
-    required_providers {
-      google ={
-        source = "hashicorp/google"
-      }
+  required_providers {
+    google = {
+      source = "hashicorp/google"
     }
+  }
 }
 
 terraform {
   backend "gcs" {
-    bucket      = "terraform-bucket-a"
-    prefix      = "folder1"
+    bucket = "terraform-bucket-a"
+    prefix = "folder3"
   }
 }
 
 provider "google" {
-  project     = var.project
-  region      = var.region
-  zone        = "us-central1-a"
+  project = var.project
+  region  = var.region
+  zone    = "us-central1-a"
 
 }
 
@@ -81,7 +81,7 @@ resource "google_compute_firewall" "firewall" {
   }
   allow {
     protocol = "tcp"
-    ports    = ["80", "8080", "1000-2000", "22", "3386"]
+    ports    = ["80", "8080", "22", "3386"]
   }
   source_tags   = ["web"]
   source_ranges = ["0.0.0.0/0"]
@@ -96,17 +96,17 @@ resource "google_compute_address" "ip-add" {
 resource "google_compute_instance" "my-vm" {
   name                    = "terrform-vm"
   machine_type            = "f1-micro"
-  tags                    = ["web","http-server"]
+  tags                    = ["web", "http-server"]
   zone                    = "us-central1-a"
-  metadata_startup_script = file("startup.sh")
+  metadata_startup_script = "echo Hi > /test.txt"
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-9"
     }
   }
 
-  network_interface { 
-    network = module.vpc.network_name 
+  network_interface {
+    network    = module.vpc.network_name
     subnetwork = module.vpc.subnets_self_links[0]
 
     access_config {
@@ -114,9 +114,9 @@ resource "google_compute_instance" "my-vm" {
     }
   }
 
-  
-  
-  
+
+
+
 
 }
 output "ip" {
