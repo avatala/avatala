@@ -1,18 +1,15 @@
 terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-    
+    required_providers {
+      google ={
+        source = "hashicorp/google"
+      }
     }
-  }
-  required_version = ">= 1.1.0"
+}
 
-  cloud {
-    organization = "terraform-gcp"
-
-    workspaces {
-      name = "getting-started-with-terraform"
-    }
+terraform {
+  backend "gcs" {
+    bucket      = "terraform-bucket-a"
+    prefix      = "folder1"
   }
 }
 
