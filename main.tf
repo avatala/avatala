@@ -18,13 +18,10 @@ terraform {
 resource "google_project" "my-first-project" {
   name            = var.project_name
   project_id      = var.project_name
-  billing_account = data.google_billing_account.acct.id
+  billing_account = "01AB17-BB7540-D38976"
 
 }
-data "google_billing_account" "acct" {
-  display_name = "My Billing Account"
-  open         = true
-}
+
 
 
 resource "google_project_service" "service" {
