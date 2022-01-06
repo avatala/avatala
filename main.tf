@@ -1,3 +1,4 @@
+
 terraform {
   required_providers {
     google = {
@@ -6,15 +7,18 @@ terraform {
     }
   }
 
-  required_version = ">=1.1.0"
-  cloud {
+}
+terraform {
+  backend "remote" {
     organization = "terraform-gcp"
+
     workspaces {
       name = "getting-started-with-terraform"
-
     }
   }
 }
+
+
 
 data "google_billing_account" "acct" {
   display_name = "my billing account"
@@ -23,7 +27,7 @@ data "google_billing_account" "acct" {
 }
 resource "google_project" "my-first-project" {
   name            = var.project_name
-  project_id      = var.id
+  project_id      = var.project_name
   billing_account = data.google_billing_account.acct.id
 
 }
