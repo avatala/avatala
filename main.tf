@@ -9,22 +9,19 @@ terraform {
 
 }
 terraform {
-  backend "remote" {
-    organization = "terraform-gcp"
-
-    workspaces {
-      name = "getting-started-with-terraform"
-    }
+  backend "gcs" {
+    bucket = "terraform-bucket-b"
+    prefix = "folder1"
   }
 }
 
 
 
 data "google_billing_account" "acct" {
-  display_name = "my billing account"
+  display_name = "My Billing Account"
   open         = true
-
 }
+
 resource "google_project" "my-first-project" {
   name            = var.project_name
   project_id      = var.project_name
