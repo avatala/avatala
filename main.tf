@@ -1,77 +1,77 @@
 terraform {
   required_providers {
-    google ={
-      source = "hashicorp/google"
-      version= "~>3.0"
+    google = {
+      source  = "hashicorp/google"
+      version = "~>3.0"
     }
   }
-  
+
   required_version = ">=1.1.0"
   cloud {
-    organization ="terraform-gcp"
+    organization = "terraform-gcp"
     workspaces {
-      name ="getting-started-with-terraform"  
+      name = "getting-started-with-terraform"
 
     }
   }
 }
 
 data "google_billing_account" "acct" {
-    display_name = "my billing account"
-    open = true
-  
+  display_name = "my billing account"
+  open         = true
+
 }
 resource "google_project" "my-first-project" {
-    name = var.project_name
-    project_id = var.id
-    billing_account = data.google_billing_account.acct.id
-  
+  name            = var.project_name
+  project_id      = var.id
+  billing_account = data.google_billing_account.acct.id
+
 }
 
 resource "google_project_service" "service" {
-    for_each = toset([
-        "compute.googleapis.com",
-        "storage.googleapis.com"
-    ])
-    service = each.key
-    project = google_project.my-first-project.project_id
-    disable_on_destroy = false
-  
+  for_each = toset([
+    "compute.googleapis.com",
+    "storage.googleapis.com"
+  ])
+  service            = each.key
+  project            = google_project.my-first-project.project_id
+  disable_on_destroy = false
+
 }
 
- resource "google_service_account" "name" {
-    display_name = var.service_account_name
-    account_id = var.service_account_name
-    project = google_project.my-first-project.project_id
-   
+resource "google_service_account" "name" {
+  display_name = var.service_account_name
+  account_id   = var.service_account_name
+  project      = google_project.my-first-project.project_id
+
 }
 resource "google_service_account_iam_member" "role-binding" {
-    
-    for_each = toset([
-        "roles/resourcemanager.projectCreator",
-        "roles/editor",
-        "roles/billing.user"
-    ])
-    role = each.key
-    member = "serviceAccount:${google_service_account.name.email}"
-  
+
+  for_each = toset([
+    "roles/resourcemanager.projectCreator",
+    "roles/editor",
+    "roles/billing.user"
+  ])
+  role   = each.key
+  member = "serviceAccount:${google_service_account.name.email}"
+
 }
 resource "google_storage_bucket" "bucket" {
-    name = "${google_project.my-first-project.project_id}-tf-bucket"
-    location = var.region
-    forceforce_destroy = true
-    uniuniform_bucket_level_access = true
-    project = google_project.my-first-project.project_id
+  name                           = "${google_project.my-first-project.project_id}-tf-bucket"
+  location                       = var.region
+  forceforce_destroy             = true
+  uniuniform_bucket_level_access = true
+  project                        = google_project.my-first-project.project_id
 
-  
+
 }
 resource "google_storage_bucket_iam_binding" "sa-binding" {
-    bucket = google_storage_bucket.bucket.name
-    role = "roles/storage.objectAdmin"
-    members = [
-        "serviceAccount:${google_service_account.name.email}"
-    ]  
-  
+  bucket = google_storage_bucket.bucket.name
+  role   = "roles/storage.objectAdmin"
+  members = [
+    "serviceAccount:${google_service_account.name.email}"
+  ]
+
 }
 module "vpc" {
   source  = "terraform-google-modules/network/google"
@@ -144,8 +144,8 @@ resource "google_compute_instance" "my-vm" {
     }
   }
 
-  network_interface { 
-    network = module.vpc.network_name 
+  network_interface {
+    network    = module.vpc.network_name
     subnetwork = module.vpc.subnets_self_links[0]
 
     access_config {
@@ -155,7 +155,7 @@ resource "google_compute_instance" "my-vm" {
 
   lifecycle {
     create_before_destroy = true
-  
+
   }
 
 
