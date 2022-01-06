@@ -50,7 +50,7 @@ resource "google_service_account" "name" {
 
 }
 resource "google_service_account_iam_member" "role-binding" {
-
+  service_account_id = "${google_service_account.name.name}"
   for_each = toset([
     "roles/resourcemanager.projectCreator",
     "roles/editor",
@@ -63,13 +63,14 @@ resource "google_service_account_iam_member" "role-binding" {
 resource "google_storage_bucket" "bucket" {
   name                           = "${google_project.my-first-project.project_id}-tf-bucket"
   location                       = var.region
-  forceforce_destroy             = true
-  uniuniform_bucket_level_access = true
+  force_destroy             = true
+  uniform_bucket_level_access = true
   project                        = google_project.my-first-project.project_id
 
 
 }
 resource "google_storage_bucket_iam_binding" "sa-binding" {
+
   bucket = google_storage_bucket.bucket.name
   role   = "roles/storage.objectAdmin"
   members = [
