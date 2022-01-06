@@ -32,7 +32,8 @@ resource "google_project" "my-first-project" {
 resource "google_project_service" "service" {
   for_each = toset([
     "compute.googleapis.com",
-    "storage.googleapis.com"
+    "storage.googleapis.com",
+    "cloudbilling.googleapis.com"
   ])
   service            = each.key
   project            = google_project.my-first-project.project_id
