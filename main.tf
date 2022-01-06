@@ -15,19 +15,17 @@ terraform {
   }
 }
 
-
-
-data "google_billing_account" "acct" {
-  display_name = "My Billing Account"
-  open         = true
-}
-
 resource "google_project" "my-first-project" {
   name            = var.project_name
   project_id      = var.project_name
   billing_account = data.google_billing_account.acct.id
 
 }
+data "google_billing_account" "acct" {
+  display_name = "My Billing Account"
+  open         = true
+}
+
 
 resource "google_project_service" "service" {
   for_each = toset([
