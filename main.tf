@@ -15,6 +15,10 @@ terraform {
   }
 }
 
+provider "google" {
+  project     = google_project.my-first-project.project_id
+}
+
 resource "google_project" "my-first-project" {
   name            = var.project_name
   project_id      = var.project_name
