@@ -15,9 +15,7 @@ terraform {
   }
 }
 
-provider "google" {
-  project     = google_project.my-first-project.project_id
-}
+
 
 resource "google_project" "my-first-project" {
   name            = var.project_name
@@ -131,6 +129,7 @@ resource "google_compute_firewall" "firewall" {
 }
 resource "google_compute_address" "ip-add" {
   name = "external-ip"
+  project     = google_project.my-first-project.project_id
 
 }
 
