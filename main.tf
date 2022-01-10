@@ -1,33 +1,82 @@
+
 terraform {
   required_providers {
     google = {
       source = "hashicorp/google"
+
     }
   }
-}
 
+}
 terraform {
   backend "gcs" {
-    bucket = "terraform-bucket-a"
-    prefix = "folder3"
+    bucket = "terraform-bucket-b"
+    prefix = "folder1"
   }
 }
 
-provider "google" {
-  project = var.project
-  region  = var.region
-  zone    = "us-central1-a"
+resource "google_project" "my-first-project" {
+  name            = var.project_name
+  project_id      = var.project_name
+  billing_account = "01AB17-BB7540-D38976"
 
 }
 
 
 
+resource "google_project_service" "service" {
+  for_each = toset([
+    "compute.googleapis.com",
+    "storage.googleapis.com",
+    "cloudbilling.googleapis.com"
+  ])
+  service            = each.key
+  project            = google_project.my-first-project.project_id
+  disable_on_destroy = false
+
+}
+
+resource "google_service_account" "name" {
+  display_name = var.service_account_name
+  account_id   = var.service_account_name
+  project      = google_project.my-first-project.project_id
+
+}
+resource "google_service_account_iam_member" "role-binding" {
+  service_account_id = google_service_account.name.name
+  for_each = toset([
+    "roles/resourcemanager.projectCreator",
+    "roles/editor",
+    "roles/billing.user"
+  ])
+  role   = each.key
+  member = "serviceAccount:${google_service_account.name.email}"
+
+}
+resource "google_storage_bucket" "bucket" {
+  name                        = "${google_project.my-first-project.project_id}-tf-bucket"
+  location                    = var.region
+  force_destroy               = true
+  uniform_bucket_level_access = true
+  project                     = google_project.my-first-project.project_id
+
+
+}
+resource "google_storage_bucket_iam_binding" "sa-binding" {
+
+  bucket = google_storage_bucket.bucket.name
+  role   = "roles/storage.objectAdmin"
+  members = [
+    "serviceAccount:${google_service_account.name.email}"
+  ]
+
+}
 module "vpc" {
   source  = "terraform-google-modules/network/google"
   version = "~> 3.0"
 
-  project_id   = var.project
-  network_name = "my-network"
+  project_id   = google_project.my-first-project.project_id
+  network_name = var.vpc_network
   routing_mode = "GLOBAL"
 
   subnets = [
@@ -50,21 +99,9 @@ module "vpc" {
       subnet_flow_logs_metadata = "INCLUDE_ALL_METADATA"
     }
   ]
-
-  secondary_ranges = {
-    subnet-02 = [
-      {
-        range_name    = "subnet-02-secondary-01"
-        ip_cidr_range = "192.168.64.0/24"
-      },
-    ]
-
-    subnet-02 = []
-  }
-
   routes = [
     {
-      name              = "egress-internet"
+      name              = "egress-to-internet"
       description       = "route through IGW to access internet"
       destination_range = "0.0.0.0/0"
       tags              = "egress-inet"
@@ -94,10 +131,10 @@ resource "google_compute_address" "ip-add" {
 }
 
 resource "google_compute_instance" "my-vm" {
-  name                    = "terrform-vm"
+  name                    = var.vm_name
   machine_type            = "f1-micro"
-  tags                    = ["web", "http-server"]
-  zone                    = "us-central1-a"
+  tags                    = ["web"]
+  zone                    = var.my_zone
   metadata_startup_script = file("startup.sh")
   boot_disk {
     initialize_params {
@@ -114,7 +151,10 @@ resource "google_compute_instance" "my-vm" {
     }
   }
 
+  lifecycle {
+    create_before_destroy = true
 
+  }
 
 
 
@@ -124,3 +164,7 @@ output "ip" {
   value = google_compute_address.ip-add.address
 
 }
+
+
+
+
